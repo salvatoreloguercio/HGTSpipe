@@ -343,10 +343,10 @@ individual_Jk_stats<-function(infile,targetJk){
   block<-vector()
   for(x in 1:length(v_genes)){
     total_Jk_gene<-infile[which(infile$None_v_gene_full==v_genes[x]&infile$None_j_gene_gene==targetJk),]
-    total_Jk_gene_percent<-(nrow(total_Jk_gene)/length(which(infile$None_v_gene_full==v_genes[x])))*100
+    Jk_total<-length(which(infile$None_j_gene_gene==targetJk))
+    total_Jk_gene_percent<-(nrow(total_Jk_gene)/Jk_total)*100
     Jk_prod<-length(which(total_Jk_gene$None_prod=="yes"))
     
-    Jk_total<-length(which(infile$None_j_gene_gene==targetJk))
     Jk_total_prod<-length(which(infile$None_j_gene_gene==targetJk&infile$None_prod=="yes"))
     Jk_total_nonprod<-length(which(infile$None_j_gene_gene==targetJk&infile$None_prod=="no"))
     
