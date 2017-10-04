@@ -26,7 +26,7 @@ library(Biostrings)
 
 HGTS_processing<-function(input_file,input_type,dedup){
 
-  logfile<-file(paste0(sub(".csv","",input_file),"_",format(Sys.time(), format = "%Y-%m-%d-%H%M"),"_report.txt"),open="a")
+  logfile<-file(paste0(sub(".csv","",input_file),"_",format(Sys.time(), format = "%Y-%m-%d-%H%M"),"_dedup_",dedup,"_report.txt"),open="a")
   
   cat(paste0("input file: ",input_file),file = logfile, sep="\n")
   cat(paste0("input type: ",input_type),file = logfile, sep="\n")
@@ -273,14 +273,14 @@ nonprod_total<-(v_genes_nonprod/dim(infile_IV)[1])*100
 nonprod_nonprod<-(v_genes_nonprod/prod[1])*100
 
 outtab_allJks<-cbind(vgenes[v_genes],vgenes_percent[v_genes],v_genes_prod,prod_total,prod_prod,v_genes_nonprod,nonprod_total,nonprod_nonprod)
-# outtab_allJks=outtab_allJks[order(rownames(outtab_allJks)),]
+#outtab_allJks=outtab_allJks[order(rownames(outtab_allJks)),]
 colnames(outtab_allJks)[1:2]<-c("total occurrences","% total occurrences")
 
 v_genes_ord<-sapply(v_genes,function(x) as.numeric(strsplit(x,"[-*]")[[1]][2]))
 outtab_allJks=outtab_allJks[order(v_genes_ord),]
 
 library(xlsx)
-write.xlsx(outtab_allJks,file=paste0(sub(".csv","",input_file),"_output_stats_allJk.xlsx"))
+write.xlsx(outtab_allJks,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_allJk.xlsx"))
 
 # gDNA: keep only exact matches of Jk primer
 
@@ -296,10 +296,10 @@ cat(paste0("Jk exact matches: ",dim(infile_IV_exact)[1]),file = logfile, sep="\n
 
 # reassign Jks
 # Jk1 reassignment
-Jk1_reassign<-c("TGGACGTTCGGTGGAGGCACCAAGCTGGAAATAAAACGTAAGT","TGGACGTTCGGTGGAGGGACCAAGCTGGAAATAAAACGTAAGT","TGGACGTTCGGCTCGGGGACAAAGTT","TGGACGTTCGGTGGAGGCACCAAGCTGGAGCTGAAACG")
-Jk2_reassign<-c("GTACACGTTCGGCTCGGGGACAAAGTT","GTACACGTTCGGAGGGGGACCAAGCTGGAGCTGAAACG")
+Jk1_reassign<-c("TGGACGTTCGGTGGAGGCACCAAGCTGGAAATAAAACGTAAGT","TGGACGTTCGGTGGAGGGACCAAGCTGGAAATAAAACGTAAGT","TGGACGTTCGGCTCGGGGACAAAGTT","TGGACGTTCGGTGGAGGCACCAAGCTGGAGCTGAAACG","TGGACGTTCGGTGGAGGGACCAAGCTGGAGCTGAAACG")
+Jk2_reassign<-c("GTACACGTTCGGCTCGGGGACAAAGTT","GTACACGTTCGGAGGGGGGACCAAGCTGGAGCTGAAACG")
 Jk4_reassign<-"TTCACGTTCGGCTCGGGGACCAAGCTGGAAATAAAAC"
-Jk5_reassign<-c("CTCACGTTCGGTGCTGGGGACCAAGCTGGAAATAAAAC","CTCACGTTCGGCTCGGGGACAAAGTT")
+Jk5_reassign<-c("CTCACGTTCGGTGCTGGGACCAAGCTGGAAATAAAAC","CTCACGTTCGGCTCGGGGACAAAGTT")
 
 Jk_reassign<-function(infile_IV,Jk_reassign_seqs,target_reassign){
   
@@ -370,14 +370,14 @@ individual_Jk_stats<-function(infile,targetJk){
 
 if(input_type=="RNA"){
 Jk_individual_stats_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV,x)))
-write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_output_stats_individual_Jks.xlsx"))
+write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks.xlsx"))
 
 }else if(input_type=="gDNA"){
   Jk_stats_exact_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_exact,x)))
-  write.xlsx(Jk_stats_exact_tab,file=paste0(sub(".csv","",input_file),"_output_stats_individual_Jks_exact.xlsx"))
+  write.xlsx(Jk_stats_exact_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks_exact.xlsx"))
 
   Jk_stats_combined_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_combined,x)))
-  write.xlsx(Jk_stats_combined_tab,file=paste0(sub(".csv","",input_file),"_output_stats_individual_Jks_combined.xlsx"))
+  write.xlsx(Jk_stats_combined_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks_combined.xlsx"))
 }
 
 close(logfile)
