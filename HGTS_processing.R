@@ -366,11 +366,13 @@ individual_Jk_stats<-function(infile,targetJk){
   block
 }
 
+infile_IV_simple<-infile_IV[,c("None_v_gene_full","None_v_gene_gene","None_j_gene_full","None_j_gene_gene","None_seq_id","None_chain","None_nt_identity_v","None_germ_alignments_nt_var_query","None_prod","None_raw_input")]
 
 
 if(input_type=="RNA"){
-Jk_individual_stats_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV,x)))
-write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks.xlsx"))
+  Jk_individual_stats_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV,x)))
+  write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks.xlsx"))
+  write.xlsx(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
 
 }else if(input_type=="gDNA"){
   Jk_stats_exact_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_exact,x)))
@@ -378,6 +380,13 @@ write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup
 
   Jk_stats_combined_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_combined,x)))
   write.xlsx(Jk_stats_combined_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks_combined.xlsx"))
+  
+  exact_match<-sapply(infile_IV$None_seq_id,function(x) ifelse(x%in%infile_IV_exact$None_seq_id,"yes","no"))
+  crossampl_match<-sapply(infile_IV$None_seq_id,function(x) ifelse(x%in%infile_IV_crossampl$None_seq_id,"yes","no"))
+  
+  infile_IV_simple=cbind(infile_IV_simple,exact_match,crossampl_match)
+  write.xlsx(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
+  
 }
 
 close(logfile)
