@@ -366,7 +366,7 @@ individual_Jk_stats<-function(infile,targetJk){
   block
 }
 
-infile_IV_simple<-infile_IV[,c("None_v_gene_full","None_v_gene_gene","None_j_gene_full","None_j_gene_gene","None_seq_id","None_chain","None_nt_identity_v","None_germ_alignments_nt_var_query","None_prod","None_raw_input")]
+infile_IV_simple<-infile_IV[,c("None_v_gene_full","None_v_gene_gene","None_j_gene_full","None_j_gene_gene","None_seq_id","None_chain","None_cdr3_nt","None_cdr3_len","None_nt_identity_v","None_germ_alignments_nt_var_query","None_prod","None_raw_input")]
 
 
 if(input_type=="RNA"){
