@@ -372,7 +372,7 @@ infile_IV_simple<-infile_IV[,c("None_v_gene_full","None_v_gene_gene","None_j_gen
 if(input_type=="RNA"){
   Jk_individual_stats_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV,x)))
   write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks.xlsx"))
-  write.xlsx(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
+  write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
 
 }else if(input_type=="gDNA"){
   Jk_stats_exact_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_exact,x)))
@@ -386,7 +386,7 @@ if(input_type=="RNA"){
   exact_or_crossampl_match<-sapply(infile_IV$None_seq_id,function(x) ifelse(x%in%infile_IV_exact$None_seq_id|x%in%infile_IV_crossampl$None_seq_id,"yes","no"))
   
   infile_IV_simple=cbind(infile_IV_simple,exact_match,crossampl_match,exact_or_crossampl_match)
-  write.xlsx(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
+  write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
   
 }
 
