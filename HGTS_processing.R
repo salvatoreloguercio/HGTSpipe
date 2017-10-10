@@ -1,6 +1,7 @@
 #! /usr/bin/Rscript
 
 options(stringsAsFactors = F)
+options(java.parameters = "- Xmx1024m")
 
 # HTGS abstar processing
 
