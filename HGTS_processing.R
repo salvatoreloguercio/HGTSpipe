@@ -286,7 +286,7 @@ write.xlsx(outtab_allJks,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"
 
 if(input_type=="gDNA"){
 
-Jk_seqs<-c("TGGACGTTCGGTGGAGGCACCAAGCTGGAAATC","GTACACGTTCGGAGGGGGGACCAAGCTGGAAATAAAACGTAAGT","TTCACGTTCGGCTCGGGGACAAAGTT","CTCACGTTCGGTGCTGGGACCAAGCTGGAGCTGAAACG")
+Jk_seqs<-c("CGTTCGGTGGAGGCACCAAGCTGGAAAT[ACTG]","ACGTTCGGAGGGGGGACCAAGCTGGAAATAAAACGTAAG[ACTG]","TTCACGTTCGGCTCGGGGACAAAGT[ACTG]","CGTTCGGTGCTGGGACCAAGCTGGAGCTGAAAC[ACTG]")
 
 infile_exact<-sapply(infile_IV$None_raw_input,function(x) any(str_detect(x,Jk_seqs)))
 
@@ -296,10 +296,10 @@ cat(paste0("Jk exact matches: ",dim(infile_IV_exact)[1]),file = logfile, sep="\n
 
 # reassign Jks
 # Jk1 reassignment
-Jk1_reassign<-c("TGGACGTTCGGTGGAGGCACCAAGCTGGAAATAAAACGTAAGT","TGGACGTTCGGTGGAGGGACCAAGCTGGAAATAAAACGTAAGT","TGGACGTTCGGCTCGGGGACAAAGTT","TGGACGTTCGGTGGAGGCACCAAGCTGGAGCTGAAACG","TGGACGTTCGGTGGAGGGACCAAGCTGGAGCTGAAACG")
-Jk2_reassign<-c("GTACACGTTCGGCTCGGGGACAAAGTT","GTACACGTTCGGAGGGGGGACCAAGCTGGAGCTGAAACG")
-Jk4_reassign<-"TTCACGTTCGGCTCGGGGACCAAGCTGGAAATAAAAC"
-Jk5_reassign<-c("CTCACGTTCGGTGCTGGGACCAAGCTGGAAATAAAAC","CTCACGTTCGGCTCGGGGACAAAGTT")
+Jk1_reassign<-c("CGTTCGGTGGAGGCACCAAGCTGGAAATAAAACGTAAG[ACTG]","CGTTCGGTGGAGGGACCAAGCTGGAAATAAAACGTAAG[ACTG]","TGGACGTTCGGCTCGGGGACAAAGT[ACTG]","CGTTCGGTGGAGGCACCAAGCTGGAGCTGAAAC[ACTG]","CGTTCGGTGGAGGGACCAAGCTGGAGCTGAAAC[ACTG]")
+Jk2_reassign<-c("GTACACGTTCGGCTCGGGGACAAAGT[ACTG]","ACGTTCGGAGGGGGGACCAAGCTGGAGCTGAAAC[ACTG]")
+Jk4_reassign<-"CGTTCGGCTCGGGGACCAAGCTGGAAATAAAA[ACTG]"
+Jk5_reassign<-c("CGTTCGGTGCTGGGACCAAGCTGGAAATAAAA[ACTG]","CTCACGTTCGGCTCGGGGACAAAGT[ACTG]")
 
 Jk_reassign<-function(infile_IV,Jk_reassign_seqs,target_reassign){
   
@@ -383,8 +383,9 @@ if(input_type=="RNA"){
   
   exact_match<-sapply(infile_IV$None_seq_id,function(x) ifelse(x%in%infile_IV_exact$None_seq_id,"yes","no"))
   crossampl_match<-sapply(infile_IV$None_seq_id,function(x) ifelse(x%in%infile_IV_crossampl$None_seq_id,"yes","no"))
+  exact_or_crossampl_match<-sapply(infile_IV$None_seq_id,function(x) ifelse(x%in%infile_IV_exact$None_seq_id|x%in%infile_IV_crossampl$None_seq_id,"yes","no"))
   
-  infile_IV_simple=cbind(infile_IV_simple,exact_match,crossampl_match)
+  infile_IV_simple=cbind(infile_IV_simple,exact_match,crossampl_match,exact_or_crossampl_match)
   write.xlsx(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
   
 }
