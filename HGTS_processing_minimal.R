@@ -65,15 +65,15 @@ cat(paste0("Infile II rows: ",dim(infile_II)[1]),file = logfile, sep="\n")
 cat("-----",file = logfile, sep="\n")
 
 # filter III 
-# Vk gene length >= 150bp.
+# Vk gene length >= 150bp and <=311bp
 
 Vk_gene_length_col<-grep("v_gene_length",colnames(infile_II))
 
 glength<-apply(infile_II,1,function(x) nchar(x[Vk_gene_length_col]))
 
-infile_III<-infile_II[which(glength>=150),]
+infile_III<-infile_II[which(glength>=150&glength<=311),]
 
-cat("Filter III - Vk gene length >= 150bp",file = logfile, sep="\n")
+cat("Filter III - Vk gene length >= 150bp and <= 311 bp",file = logfile, sep="\n")
 cat(paste0("Reads removed: ",length(which(glength<150))),file = logfile, sep="\n")
 cat(paste0("Infile III rows: ",dim(infile_III)[1]),file = logfile, sep="\n")
 cat("-----",file = logfile, sep="\n")
