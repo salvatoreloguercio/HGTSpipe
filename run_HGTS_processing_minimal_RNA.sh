@@ -13,5 +13,5 @@ echo
 echo 'cd $PBS_O_WORKDIR'
 echo 'module load R'
 echo
-echo "Rscript --no-restore --no-save HGTS_processing_minimal.R -i $1 -t RNA -d $2"
+echo "Rscript --no-restore --no-save HGTS_processing_minimal.R -i $1 -t RNA -d $2 -l $3 -u $4"
 echo
