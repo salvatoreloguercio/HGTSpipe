@@ -21,9 +21,9 @@ option_list = list(
   make_option(c("-t", "--input_type"), type="character", default=NULL, 
               help="input type (gDNA or RNA)", metavar="character"),
   make_option(c("-d", "--dedup"), type="logical", default=NULL, 
-              help="deduplication", metavar="character")),
+              help="deduplication", metavar="character"),
   make_option(c("-l", "--lower_length"), type="integer", default=150, 
-            help="lower cutoff for V gene length (bp)", metavar="number")),
+            help="lower cutoff for V gene length (bp)", metavar="number"),
   make_option(c("-u", "--upper_length"), type="integer", default=311, 
             help="upper cutoff for V gene length (bp)", metavar="number"));
 
