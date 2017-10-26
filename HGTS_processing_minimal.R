@@ -21,7 +21,11 @@ option_list = list(
   make_option(c("-t", "--input_type"), type="character", default=NULL, 
               help="input type (gDNA or RNA)", metavar="character"),
   make_option(c("-d", "--dedup"), type="logical", default=NULL, 
-              help="deduplication", metavar="character"));
+              help="deduplication", metavar="character")),
+  make_option(c("-l", "--lower_length"), type="integer", default=150, 
+            help="lower cutoff for V gene length (bp)", metavar="number")),
+  make_option(c("-u", "--upper_length"), type="integer", default=311, 
+            help="upper cutoff for V gene length (bp)", metavar="number"));
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -29,7 +33,7 @@ opt = parse_args(opt_parser);
 library(stringr)
 library(Biostrings)
 
-HGTS_processing<-function(input_file,exact_matches,cross_priming,input_type,dedup){
+HGTS_processing<-function(input_file,exact_matches,cross_priming,input_type,dedup,vlower,vupper){
 
   logfile<-file(paste0(sub(".csv","",input_file),"_",format(Sys.time(), format = "%Y-%m-%d-%H%M"),"_dedup_",dedup,"_report.txt"),open="a")
   
@@ -71,9 +75,9 @@ Vk_gene_length_col<-grep("v_gene_length",colnames(infile_II))
 
 glength<-apply(infile_II,1,function(x) nchar(x[Vk_gene_length_col]))
 
-infile_III<-infile_II[which(glength>=150&glength<=311),]
+infile_III<-infile_II[which(glength>=vlower&glength<=vupper),]
 
-cat("Filter III - Vk gene length >= 150bp and <= 311 bp",file = logfile, sep="\n")
+cat(paste0("Filter III - Vk gene length >= ",vlower," bp and <= ",vupper," bp"),file = logfile, sep="\n")
 cat(paste0("Reads removed: ",length(which(glength<150))),file = logfile, sep="\n")
 cat(paste0("Infile III rows: ",dim(infile_III)[1]),file = logfile, sep="\n")
 cat("-----",file = logfile, sep="\n")
@@ -420,6 +424,6 @@ close(logfile)
 
 }
 
-HGTS_processing(opt$input_file,opt$exact_matches,opt$cross_priming,opt$input_type,opt$dedup)
+HGTS_processing(opt$input_file,opt$exact_matches,opt$cross_priming,opt$input_type,opt$dedup,opt$lower_length,opt$upper_length)
 
 
