@@ -435,8 +435,13 @@ cat(paste0("Output ordered following: ",genelist),file = logfile, sep="\n")
 if(input_type=="RNA"){
   Jk_individual_stats_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV,x,igk_genes)))
   write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks.xlsx"))
-  write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
-
+  
+  if(nrow(infile_IV_simple)<1000000){
+   write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
+  }else{
+    write.table(infile_IV_simple,row.names = F,col.names=T,sep="\t",quote=F,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.tsv"))
+  }
+    
 }else if(input_type=="gDNA"){
   Jk_stats_exact_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_exact,x,igk_genes)))
   write.xlsx(Jk_stats_exact_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks_exact.xlsx"))
@@ -449,8 +454,13 @@ if(input_type=="RNA"){
   exact_or_crossampl_match<-sapply(infile_IV$seq_id,function(x) ifelse(x%in%infile_IV_exact$seq_id|x%in%infile_IV_crossampl$seq_id,"yes","no"))
   
   infile_IV_simple=cbind(infile_IV_simple,exact_match,crossampl_match,exact_or_crossampl_match)
-  write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
   
+  if(nrow(infile_IV_simple)<1000000){
+   write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
+  }else{
+    write.table(infile_IV_simple,row.names = F,col.names=T,sep="\t",quote=F,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.tsv"))
+  }
+    
 }
 
 close(logfile)
