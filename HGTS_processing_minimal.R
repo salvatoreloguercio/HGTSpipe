@@ -25,7 +25,9 @@ option_list = list(
   make_option(c("-l", "--lower_length"), type="integer", default=150, 
             help="lower cutoff for V gene length (bp)", metavar="number"),
   make_option(c("-u", "--upper_length"), type="integer", default=311, 
-            help="upper cutoff for V gene length (bp)", metavar="number"));
+            help="upper cutoff for V gene length (bp)", metavar="number"),
+  make_option(c("-g", "--genelist"), type="character", default="IGK_genes_c57bl6_ord.txt", 
+              help="ordered list of IGK genes", metavar="character"));
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -33,7 +35,7 @@ opt = parse_args(opt_parser);
 library(stringr)
 library(Biostrings)
 
-HGTS_processing<-function(input_file,exact_matches,cross_priming,input_type,dedup,vlower,vupper){
+HGTS_processing<-function(input_file,exact_matches,cross_priming,input_type,dedup,vlower,vupper,genelist){
 
   logfile<-file(paste0(sub(".csv","",input_file),"_",format(Sys.time(), format = "%Y-%m-%d-%H%M"),"_dedup_",dedup,"_report.txt"),open="a")
   
@@ -284,12 +286,27 @@ nonprod_nonprod<-(v_genes_nonprod/prod[1])*100
 outtab_allJks<-cbind(vgenes[v_genes],vgenes_percent[v_genes],v_genes_prod,prod_total,prod_prod,v_genes_nonprod,nonprod_total,nonprod_nonprod)
 #outtab_allJks=outtab_allJks[order(rownames(outtab_allJks)),]
 colnames(outtab_allJks)[1:2]<-c("total occurrences","% total occurrences")
+rownames(outtab_allJks)<-v_genes
 
-v_genes_ord<-sapply(v_genes,function(x) as.numeric(strsplit(x,"[-*]")[[1]][2]))
-outtab_allJks=outtab_allJks[order(v_genes_ord),]
+#v_genes_ord<-sapply(v_genes,function(x) as.numeric(strsplit(x,"[-*]")[[1]][2]))
+#outtab_allJks=outtab_allJks[order(v_genes_ord),]
+
+igk_genes<-read.delim(genelist,header=F)
+igk_genes=igk_genes$V1
+
+outtab_allJks2<-vector()
+for(i in 1:length(igk_genes)){
+  if(igk_genes[i]%in%rownames(outtab_allJks)){
+    outtab_allJks2=rbind(outtab_allJks2,outtab_allJks[igk_genes[i],]) 
+  }else{
+    outtab_allJks2=rbind(outtab_allJks2,rep(0,dim(outtab_allJks)[2])) 
+  }
+}
+
+rownames(outtab_allJks2)<-igk_genes
 
 library(xlsx)
-write.xlsx(outtab_allJks,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_allJk.xlsx"))
+write.xlsx(outtab_allJks2,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_allJk.xlsx"))
 
 # gDNA: keep only exact matches of Jk primer
 
@@ -368,7 +385,7 @@ infile_IV_combined=infile_IV_combined[!duplicated(infile_IV_combined),]
 
 }
 
-individual_Jk_stats<-function(infile,targetJk){
+individual_Jk_stats<-function(infile,targetJk,igk_genes){
   v_genes<-unique(infile$v_full)
   block<-vector()
   for(x in 1:length(v_genes)){
@@ -391,24 +408,40 @@ individual_Jk_stats<-function(infile,targetJk){
   }
   colnames(block)<-c(targetJk,paste0(targetJk," %"),paste0(targetJk,"_prod"),paste0(targetJk,"_prod/total_",targetJk,"_prod"),paste0(targetJk,"_prod/total_",targetJk),paste0(targetJk,"_nonprod"),paste0(targetJk,"_nonprod/total_",targetJk,"_nonprod"),paste0(targetJk,"_nonprod/total_",targetJk))
   rownames(block)<-v_genes
-  v_genes_ord<-sapply(v_genes,function(x) as.numeric(strsplit(x,"[-*]")[[1]][2]))
-  block=block[order(v_genes_ord),]
-  block
+
+ # igk_genes<-read.delim(genelist,header=F)
+#  igk_genes=igk_genes$V1
+  
+  block2<-vector()
+  for(i in 1:length(igk_genes)){
+    if(igk_genes[i]%in%rownames(block)){
+      block2=rbind(block2,block[igk_genes[i],]) 
+    }else{
+      block2=rbind(block2,rep(0,dim(block)[2])) 
+    }
+  }
+  
+  rownames(block2)<-igk_genes
+  block2
+  
 }
 
 infile_IV_simple<-infile_IV[,c("v_full","v_gene","j_full","j_gene","seq_id","chain","cdr3_nt","cdr3_length","var_identity_nt","v_gene_length","productive","raw_input")]
 
+cat("",file = logfile, sep="\n")
+cat(paste0("Output ordered following: ",genelist),file = logfile, sep="\n")
+
 
 if(input_type=="RNA"){
-  Jk_individual_stats_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV,x)))
+  Jk_individual_stats_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV,x,igk_genes)))
   write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks.xlsx"))
   write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
 
 }else if(input_type=="gDNA"){
-  Jk_stats_exact_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_exact,x)))
+  Jk_stats_exact_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_exact,x,igk_genes)))
   write.xlsx(Jk_stats_exact_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks_exact.xlsx"))
 
-  Jk_stats_combined_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_combined,x)))
+  Jk_stats_combined_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_combined,x,igk_genes)))
   write.xlsx(Jk_stats_combined_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks_combined.xlsx"))
   
   exact_match<-sapply(infile_IV$seq_id,function(x) ifelse(x%in%infile_IV_exact$seq_id,"yes","no"))
@@ -424,6 +457,6 @@ close(logfile)
 
 }
 
-HGTS_processing(opt$input_file,opt$exact_matches,opt$cross_priming,opt$input_type,opt$dedup,opt$lower_length,opt$upper_length)
+HGTS_processing(opt$input_file,opt$exact_matches,opt$cross_priming,opt$input_type,opt$dedup,opt$lower_length,opt$upper_length,opt$genelist)
 
 
