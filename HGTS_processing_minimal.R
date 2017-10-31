@@ -1,4 +1,4 @@
-#! /usr/bin/Rscript
+#!/usr/bin/Rscript
 
 options(stringsAsFactors = F)
 options(java.parameters = "- Xmx1024m")
@@ -27,7 +27,9 @@ option_list = list(
   make_option(c("-u", "--upper_length"), type="integer", default=311, 
             help="upper cutoff for V gene length (bp)", metavar="number"),
   make_option(c("-g", "--genelist"), type="character", default="IGK_genes_c57bl6_ord.txt", 
-              help="ordered list of IGK genes", metavar="character"));
+              help="ordered list of IGK genes", metavar="character"),
+  make_option(c("-n", "--nt_identity"), type="integer", default=95, 
+            help="nt identity cutoff (percent)", metavar="number"));
 
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -35,7 +37,7 @@ opt = parse_args(opt_parser);
 library(stringr)
 library(Biostrings)
 
-HGTS_processing<-function(input_file,exact_matches,cross_priming,input_type,dedup,vlower,vupper,genelist){
+HGTS_processing<-function(input_file,exact_matches,cross_priming,input_type,dedup,vlower,vupper,genelist,ntid){
 
   logfile<-file(paste0(sub(".csv","",input_file),"_",format(Sys.time(), format = "%Y-%m-%d-%H%M"),"_dedup_",dedup,"_report.txt"),open="a")
   
@@ -66,7 +68,7 @@ nt_identity_v_col<-grep("var_identity_nt",colnames(infile))
 infile_II<-infile_I[which(infile_I[,nt_identity_v_col]>=95),]
 
 cat("Filter II - nt_identity_v – 95% and above",file = logfile, sep="\n")
-cat(paste0("Reads removed: ",length(which(infile_I[,nt_identity_v_col]<95))),file = logfile, sep="\n")
+cat(paste0("Reads removed: ",length(which(infile_I[,nt_identity_v_col]<ntid))),file = logfile, sep="\n")
 cat(paste0("Infile II rows: ",dim(infile_II)[1]),file = logfile, sep="\n")
 cat("-----",file = logfile, sep="\n")
 
@@ -434,20 +436,20 @@ cat(paste0("Output ordered following: ",genelist),file = logfile, sep="\n")
 
 if(input_type=="RNA"){
   Jk_individual_stats_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV,x,igk_genes)))
-  write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks.xlsx"))
+  write.xlsx(Jk_individual_stats_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_nt_",ntid,"_output_stats_individual_Jks.xlsx"))
   
   if(nrow(infile_IV_simple)<1000000){
    write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
   }else{
-    write.table(infile_IV_simple,row.names = F,col.names=T,sep="\t",quote=F,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.tsv"))
+    write.table(infile_IV_simple,row.names = F,col.names=T,sep="\t",quote=F,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_nt_",ntid,"_Abstar_input_simplified.tsv"))
   }
     
 }else if(input_type=="gDNA"){
   Jk_stats_exact_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_exact,x,igk_genes)))
-  write.xlsx(Jk_stats_exact_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks_exact.xlsx"))
+  write.xlsx(Jk_stats_exact_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_nt_",ntid,"_output_stats_individual_Jks_exact.xlsx"))
 
   Jk_stats_combined_tab<-do.call("cbind",lapply(c("IGKJ1","IGKJ2","IGKJ4","IGKJ5"),function(x) individual_Jk_stats(infile_IV_combined,x,igk_genes)))
-  write.xlsx(Jk_stats_combined_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_output_stats_individual_Jks_combined.xlsx"))
+  write.xlsx(Jk_stats_combined_tab,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_nt_",ntid,"_output_stats_individual_Jks_combined.xlsx"))
   
   exact_match<-sapply(infile_IV$seq_id,function(x) ifelse(x%in%infile_IV_exact$seq_id,"yes","no"))
   crossampl_match<-sapply(infile_IV$seq_id,function(x) ifelse(x%in%infile_IV_crossampl$seq_id,"yes","no"))
@@ -456,9 +458,9 @@ if(input_type=="RNA"){
   infile_IV_simple=cbind(infile_IV_simple,exact_match,crossampl_match,exact_or_crossampl_match)
   
   if(nrow(infile_IV_simple)<1000000){
-   write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.xlsx"))
+   write.xlsx2(infile_IV_simple,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_nt_",ntid,"_Abstar_input_simplified.xlsx"))
   }else{
-    write.table(infile_IV_simple,row.names = F,col.names=T,sep="\t",quote=F,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_Abstar_input_simplified.tsv"))
+    write.table(infile_IV_simple,row.names = F,col.names=T,sep="\t",quote=F,file=paste0(sub(".csv","",input_file),"_dedup_",dedup,"_nt_",ntid,"_Abstar_input_simplified.tsv"))
   }
     
 }
@@ -467,6 +469,6 @@ close(logfile)
 
 }
 
-HGTS_processing(opt$input_file,opt$exact_matches,opt$cross_priming,opt$input_type,opt$dedup,opt$lower_length,opt$upper_length,opt$genelist)
+HGTS_processing(opt$input_file,opt$exact_matches,opt$cross_priming,opt$input_type,opt$dedup,opt$lower_length,opt$upper_length,opt$genelist,opt$nt_identity)
 
 
